@@ -1,0 +1,202 @@
+#include "player.h"
+//using namespace sf;
+
+Player::player(float startX, float startY) {
+	x = startX;
+	y = startY;
+	vx = 0;
+	vy = 0;
+	speed = 5;
+	size = 20
+}
+
+void Player::handleInput() {
+	vx = 0;
+	vy = 0;
+
+	if (keyboard::iskeyPressed(keyboard::W)) {vy = -speed;}
+	if (keyboard::iskeyPressed(keyboard::S)) {vy = speed;}
+	if (keyboard::iskeyPressed(keyboard::A)) {vx = -speed;}
+	if (keyboard::iskeyPressed(keyboard::D)) {vx = speed;}
+}
+
+void Player::update() {
+	x += vx;
+	y += vy;
+
+}
+
+void player::draw(RenderWindow& window) {
+	RectangleShape rectangle(vector2f(size, size));
+	rectangle.setFillColor(Color::Yellow);
+	rectangle.setPosition(x, y);
+	window.draw(rectangle);
+}
+
+SOURCES.CPP
+-------------------------------------
+
+#include <SFML/Graphics.hpp>
+#include "player.h"\#include "player.h"
+//#include "Level.h"
+//#include "Player.cpp"
+//#include "Level.cpp"
+
+using namespace sf;
+
+int main() {
+
+	RenderWindow window(VideoMode(800, 600), "Pacman");
+	Player player(400, 300);
+	Clock clock;				
+
+	//zomg game loop
+	while (window.isOpen()) {
+		float deltaTime = clock.restart().asSeconds();
+
+		Event event;
+		while (window.pollEvent(event)) {
+			if (event.type == Event::Closed)
+				window.close();
+		}
+
+		player.handleInput();
+		player.update();
+
+
+		window.clear();
+		player.draw(window);
+		window.display();
+
+	}//END GAME LOOP
+
+	return 0;
+}
+
+MAIN.CPP
+
+-----------------------------------------------
+
+#pragma once
+#include <SFML/Graphics.hpp>
+using namespace sf;
+
+class Level {
+private:
+	static const int ROWS = 10;
+	static const int COLS = 15;
+	float tileSize = 40;
+	int layout[ROWS][COLS] = {
+		{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, },
+		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, },
+		{1, 0, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, },
+		{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, },
+		{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, },
+		{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, },
+		{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, },
+		{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, },
+	};
+
+public:
+	void draw(RenderWindow& window);
+	int getTileValue(int row, int col) const;
+};
+
+LEVEL.H
+-------------------------------------------------------------
+
+#include <SFML/Graphics.hpp>
+using namespace sf;
+
+class Player {
+private:
+	float x;
+	float y;
+	float vx;
+	float vy;
+	float speed;
+	float size;
+
+public: 
+
+	Player(float startX, float startY);
+	void handleInput();
+	void update();
+	void draw(RenderWindow& window);
+
+};
+PLAYER.H
+---------------------------------------------------------------
+
+#include "Level.h"
+
+
+void Level::draw(RenderWindow& window) {
+	for (int row = 0; row < ROWS; ++row) {
+		for (int col = 0; col < COLS; ++col) {
+			int tileValue = layout[row][col];
+
+			Color tileColor = (tileValue == 1) ? Color::Blue : Color::Black;
+
+			RectangleShape tile(Vector2f(tileSize, tileSize));
+			tile.setFillColor(tileColor);
+			tile.setPosition(col * tileSize, row * tile);
+			window.draw(tile);
+		}
+	}
+}
+
+int Level::getTileValue(int row, int col) const {
+	if (row >= 0 && row < ROWS && col >= 0 && col < COLS) {
+		return layout[row][col];
+	}
+	return -1;
+}
+
+LEVEL.CPP
+-----------------------------------------------------------------------
+
+#include "Player.h"
+
+Player::Player(float startX, float startY) {
+	x = startX;
+	y = startY;
+	vx = 0;
+	vy = 0;
+	speed = 15;
+	size = 20
+}
+
+void Player::handleInput() {
+	vx = 0;
+	vy = 0;
+
+	if (Keyboard::isKeyPressed(Keyboard::W)) { vy = -speed; }
+	if (Keyboard::isKeyPressed(Keyboard::S)) { vy = speed; }
+	if (Keyboard::isKeyPressed(Keyboard::A)) { vx = -speed; }
+	if (Keyboard::isKeyPressed(Keyboard::D)) { vx = speed; }
+}
+
+void Player::update(float deltaTime, const Level& Level) {
+
+	enum DIRECTIONS { RIGHT, LEFT, UP, DOWN, STOP };
+	int direction = STOP;
+
+	if (vy < 0) direction = UP; else if (vy > 0) direction = DOWN; else direction = STOP;
+
+
+	if (direction == DOWN) {
+		if (Level.getTileValue(static_cast<int>((y + 30) / 40), static_cast<int>(x / 40)) == 0)
+			y += vy * deltaTime;
+		else
+			cout << "down collision!" << endl;
+	}
+	else if (direction == UP) {
+		if (Level.getTileValue(static_cast<int>((y - 10) / 40)static_cast<int>(x / 40)) == 0)
+			y += vy * deltaTime;
+		else
+			cout << "UPcollision!" << endl;
+	}
+
+
+--------------------------------------------PLAYER,CPP
